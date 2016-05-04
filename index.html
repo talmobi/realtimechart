@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>realtimechart</title>
+    <style type="text/css">
+      html, body {
+        background: #778;
+        color: #eee;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+</head>
+<body>
+  <canvas id="screen2"></canvas>
+  <canvas id="screen1"></canvas><br>
+  <canvas id="screen4"></canvas>
+  <canvas id="screen3"></canvas><br>
+  <canvas id="screen5"></canvas>
+  <script src="realtimechart.js" type="text/javascript"></script>
+  <script>
+    var ctrl1 = init('screen1', {interval: 5000, offset: 0});
+    var ctrl2 = init('screen2', {interval: 5000, offset: 5000});
+
+    var ctrl3 = init('screen3', {line_width: 4, interval: 1000, offset: 0});
+    var ctrl4 = init('screen4', {line_width: 4, interval: 1000, offset: 1000});
+
+    var ctrl5 = init('screen5', {line_width: 2, interval: 1000 * 60, offset: 3000});
+
+    var ticks = 0;
+    setInterval(function () {
+      ticks++;
+
+      var time = Date.now() - 2500 * Math.random();
+      var n = Math.random() * 10;
+
+      ctrl1.addData(n, time);
+      ctrl2.addData(n, time);
+
+      var time = Date.now() - 1000 * Math.random();
+      var n = Math.random() * 10;
+
+      ctrl3.addData(n, time);
+      ctrl4.addData(n, time);
+
+      var time = Date.now() - 3000 * Math.random();
+      var n = Math.random() * (10 + ticks / 40) + ticks / 300;
+
+      ctrl5.addData(n, time);
+
+
+
+    }, 25);
+  </script>
+</body>
+</html>
+
+<h
