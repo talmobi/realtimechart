@@ -1,4 +1,4 @@
-function init (canvas, opts) {
+window.realtimechart = module.exports = function init (canvas, opts) {
   var canvas = (typeof canvas === 'string') ? document.getElementById(canvas) : canvas;
   var ctx = canvas.getContext('2d');
   var api = null;
@@ -24,7 +24,7 @@ function init (canvas, opts) {
   //  }
   //});
 
-  var resize = function (canvas) {
+  var init = function (canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     var __running = true;
@@ -187,21 +187,46 @@ function init (canvas, opts) {
         __running = false;
       }
     };
+  }; // init
+
+
+  function resize (params) {
+    var opts = params || opts;
+    canvas.width = 300 || opts.width;
+    canvas.height = 40 || opts.height;
+
+    if (opts.width == 'auto' || opts.size == 'auto') {
+      canvas.style.width = "100%";
+      canvas.width = canvas.offsetWidth;
+    }
+
+    if (opts.height == 'auto' || opts.size == 'auto') {
+      canvas.style.height = "100%";
+      canvas.height = canvas.offsetHeight;
+      canvas.style.marginTop = "4px";
+    }
+  };
+  resize(opts);
+
+  var update = function () {
+    api.stop();
+    clearTimeout(timeout);
+    var _api = init(canvas);
+    api.addData = _api.addData;
+    api.stop = _api.stop;
+    return api;
   };
 
-  canvas.width = 300;
-  canvas.height = 40;
-  var _api = resize(canvas);
+  var _api = init(canvas);
   api = {
     addData: _api.addData,
     stop: _api.stop,
     update: function () {
-      api.stop();
-      clearTimeout(timeout);
-      var _api = resize(canvas);
-      api.addData = _api.addData;
-      api.stop = _api.stop;
-      return api;
+      return update();
+    },
+    resize: function (opts) {
+      resize({width: 'auto', height: 'auto'});
+      return update();
     }
   };
   return api;
