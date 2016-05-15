@@ -1,4 +1,8 @@
 function init (canvas, opts) {
+  var log = function (s) {
+    //console.log(s)
+  }
+
   var canvas = (typeof canvas === 'string') ? document.getElementById(canvas) : canvas
   if (!canvas) return
   var ctx = canvas.getContext('2d')
@@ -65,8 +69,8 @@ function init (canvas, opts) {
     }
 
     if (initData && (initData instanceof Array) && initData.length) {
-      console.log('------------- INIT DATA FOUND --------------')
-      console.log('init data length: %s', initData.length)
+      log('------------- INIT DATA FOUND --------------')
+      log('init data length: %s', initData.length)
       var _id = initData.slice(initData.length - data.length)
       var len = Math.min(initData.length, data.length)
       for (var i = 0; i < len; i++) {
@@ -77,12 +81,12 @@ function init (canvas, opts) {
       }
     }
 
-    console.log('data.length at init: %s', data.length)
+    log('data.length at init: %s', data.length)
 
     var timeToIndex = function (time) {
       var delta = (Date.now() - time)
       var index = Math.floor((delta / tpp) / line_width)
-      //console.log("index: " + index)
+      //log("index: " + index)
       return index
     }
 
@@ -126,7 +130,7 @@ function init (canvas, opts) {
           yMax = v
         }
       }
-      //console.log("ymax: %s", yMax)
+      //log("ymax: %s", yMax)
       yScale = scale(0, yMax * 1.25)
 
       for (var i = 0; i < d.length; i++) {
@@ -164,7 +168,7 @@ function init (canvas, opts) {
 
     tick()
 
-    console.log('get end len: %s', data.length)
+    log('get end len: %s', data.length)
 
     return {
       addData: function (value, time) {
@@ -182,10 +186,10 @@ function init (canvas, opts) {
 
   function resize (params) {
     var opts = Object.assign({}, defaults, params)
-    console.log('resizing: %sx%s', opts.width, opts.height)
+    log('resizing: %sx%s', opts.width, opts.height)
 
     if (params.size === 'auto') {
-      console.log('------------ IS AUTO ----------')
+      log('------------ IS AUTO ----------')
       opts.width = 'auto'
       opts.height = 'auto'
     }
@@ -193,21 +197,21 @@ function init (canvas, opts) {
     canvas.width = opts.width
     canvas.height = opts.height
 
-    console.log('cw: %s, ch: %s', canvas.width, canvas.height)
+    log('cw: %s, ch: %s', canvas.width, canvas.height)
 
     canvas.style.width = canvas.style.height = 'auto'
 
     if (opts.width === 'auto') {
       canvas.style.width = "100%"
       canvas.width = canvas.offsetWidth || 300
-      console.log('offsetWidth: %s', canvas.offsetWidth)
+      log('offsetWidth: %s', canvas.offsetWidth)
     }
 
     if (opts.height === 'auto') {
       canvas.style.height = "100%"
       canvas.height = canvas.offsetHeight || 40
       canvas.style.marginTop = "4px"
-      console.log('offsetHeight: %s', canvas.offsetHeight)
+      log('offsetHeight: %s', canvas.offsetHeight)
     }
   }
   resize(opts)
@@ -222,7 +226,7 @@ function init (canvas, opts) {
     var _d = api.getData()
     api.stop()
     clearTimeout(timeout)
-    console.log('UPDATE LENGTH: %s', _d.length)
+    log('UPDATE LENGTH: %s', _d.length)
     var _api = init(canvas, _d)
     api.addData = _api.addData
     api.stop = _api.stop
