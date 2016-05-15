@@ -10,23 +10,46 @@
         margin: 0;
         padding: 0;
       }
+      .container {
+        margin: .75em;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .small {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 200px;
+      }
     </style>
 </head>
-<body>
-  <canvas id="screen2"></canvas>
-  <canvas id="screen1"></canvas><br>
-  <canvas id="screen4"></canvas>
-  <canvas id="screen3"></canvas><br>
-  <canvas id="screen5"></canvas>
+<body class="container">
+  <div>
+    <canvas class="small" id="screen2"></canvas>
+    <canvas class="small" id="screen1"></canvas>
+  </div>
+  <div>
+    <canvas id="screen4"></canvas>
+    <canvas id="screen3"></canvas>
+  </div>
+  <div>
+    <canvas id="screen5"></canvas>
+    <canvas id="screen6"></canvas>
+  </div>
   <script src="realtimechart.js" type="text/javascript"></script>
   <script>
-    var ctrl1 = init('screen1', {interval: 5000, offset: 0});
-    var ctrl2 = init('screen2', {interval: 5000, offset: 5000});
+    var ctrl1 = init('screen1', { size: 'auto', interval: 5000, offset: 0 });
+    var ctrl2 = init('screen2', { size: 'auto', interval: 5000, offset: 5000 });
 
-    var ctrl3 = init('screen3', {line_width: 4, interval: 1000, offset: 0});
-    var ctrl4 = init('screen4', {line_width: 4, interval: 1000, offset: 1000});
+    var ctrl3 = init('screen3', { line_width: 4, interval: 1000, offset: 0 });
+    var ctrl4 = init('screen4', { line_width: 4, interval: 1000, offset: 1000 });
 
-    var ctrl5 = init('screen5', {line_width: 2, interval: 1000 * 60, offset: 3000});
+    var ctrl5 = init('screen5',
+      { size: 'auto', line_width: 2, interval: 1000 * 60, offset: 3000 }
+    );
+
+    var ctrl6 = init('screen6', { size: 'auto', ine_width: 6, interval: 10000, offset: 3000 });
 
     var ticks = 0;
     setInterval(function () {
@@ -48,10 +71,15 @@
       var n = Math.random() * (10 + ticks / 40) + ticks / 300;
 
       ctrl5.addData(n, time);
-
-
-
+      ctrl6.addData(n, time);
     }, 25);
+
+    var w = window.innerWidth * .75;
+    setInterval(function () {
+      w -= window.innerWidth * 0.1
+      if (w < (window.innerWidth * 0.25)) w = window.innerWidth * .75
+      ctrl6.resize({width: w, height: 40})
+    }, 600)
   </script>
 </body>
 </html>

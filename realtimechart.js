@@ -1,234 +1,251 @@
-window.realtimechart = module.exports = function init (canvas, opts) {
-  var canvas = (typeof canvas === 'string') ? document.getElementById(canvas) : canvas;
-  var ctx = canvas.getContext('2d');
-  var api = null;
-  var timeout = null;
+function init (canvas, opts) {
+  var canvas = (typeof canvas === 'string') ? document.getElementById(canvas) : canvas
+  if (!canvas) return
+  var ctx = canvas.getContext('2d')
+  var api = null
+  var timeout = null
 
-  var opts = opts || {};
+  var defaults = {
+    width: 300,
+    height: 40
+  }
 
-  // resize
-  //window.addEventListener('resize', function () {
-  //  if (canvas) {
-  //    //var new_width = canvas.parentNode.clientWidth;
-  //    var new_width = window.innerWidth;
-  //    if (canvas.width == new_width) {
-  //      // skip
-  //    } else {
-  //      canvas.width = new_width;
-  //      api.stop();
-  //      clearTimeout(timeout);
-  //      var _api = resize(canvas);
-  //      api.addData = _api.addData;
-  //      api.stop = _api.stop;
-  //    }
-  //  }
-  //});
+  var opts = opts || {}
 
-  var init = function (canvas) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  var init = function (canvas, initData) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    var __running = true;
+    var __running = true
 
-    var w = canvas.width;
-    var h = canvas.height;
+    var w = canvas.width
+    var h = canvas.height
 
+    var offset = typeof opts.offset === 'number' ? opts.offset : 1000 // in ms
 
-    var offset = typeof opts.offset === 'number' ? opts.offset : 1000; // in ms
+    var ticks = 0
+    var line_width = opts.line_width || 8
 
-    var ticks = 0;
-    var line_width = opts.line_width || 8;
-
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, 0, w, h)
 
     function clear () {
-      ctx.clearRect(0,0,w,h);
-    };
+      ctx.clearRect(0,0,w,h)
+    }
 
-    clear();
+    clear()
 
     function drawBorder () {
-      ctx.strokeStyle = "black";
-      ctx.strokeRect(0,0,w,h);
-    };
+      ctx.strokeStyle = "black"
+      ctx.strokeRect(0,0,w,h)
+    }
 
     var scale = function (min, max) {
       return function (val) {
-        return Math.max(0.0, Math.min(1.0, ((min + val) / max)));
-      };
-    };
-
-    var yScale = scale(0, h);
-
-    var interval = opts.interval || 10000; // ms
-    var pps = canvas.width / (interval / 1000); // pixels per second
-
-    var tpp = interval / canvas.width; // time per pixel (= 50ms)
-
-    // right offset
-    var offset_len = Math.ceil((offset / tpp) / line_width) + 1;
-
-    // left offset, smoothes out exits
-    var buf_left = 1;
-
-
-    var data = [];
-    for (var i = 0; i < Math.ceil(((canvas.width / line_width) + buf_left) + offset_len); i++) {
-      var v = (i * 2) % 10;
-      v = 0;
-      data.push({value: v, time: tpp * i });
+        return Math.max(0.0, Math.min(1.0, ((min + val) / max)))
+      }
     }
 
+    var yScale = scale(0, h)
+
+    var interval = opts.interval || 10000 // ms
+    var pps = canvas.width / (interval / 1000) // pixels per second
+
+    var tpp = interval / canvas.width // time per pixel (= 50ms)
+
+    // right offset
+    var offset_len = Math.ceil((offset / tpp) / line_width) + 1
+
+    // left offset, smoothes out exits
+    var buf_left = 1
+
+    var data = []
+    for (var i = 0; i < Math.ceil(((canvas.width / line_width) + buf_left) + offset_len); i++) {
+      var v = (i * 2) % 10
+      v = 0
+      data.push({value: v, time: tpp * i })
+    }
+
+    if (initData && (initData instanceof Array) && initData.length) {
+      console.log('------------- INIT DATA FOUND --------------')
+      console.log('init data length: %s', initData.length)
+      var _id = initData.slice(initData.length - data.length)
+      var len = Math.min(initData.length, data.length)
+      for (var i = 0; i < len; i++) {
+        var d = _id[i]
+        //addValue(d.value, d.time)
+        data.push(d)
+        data.shift()
+      }
+    }
+
+    console.log('data.length at init: %s', data.length)
+
     var timeToIndex = function (time) {
-      var delta = (Date.now() - time);
-      var index = Math.floor((delta / tpp) / line_width);
-      //console.log("index: " + index);
-      return index;
-    };
+      var delta = (Date.now() - time)
+      var index = Math.floor((delta / tpp) / line_width)
+      //console.log("index: " + index)
+      return index
+    }
 
-    var TICKS_PER_SECOND = pps;
-    var MS_PER_TICK = 1000 / TICKS_PER_SECOND;
+    var TICKS_PER_SECOND = pps
+    var MS_PER_TICK = 1000 / TICKS_PER_SECOND
 
-    var startTime = Date.now();
+    var startTime = Date.now()
 
     var origin = {
       x: w,
       y: h,
-    };
+    }
 
     function addValue (value, time) {
-      time = time || Date.now();
-      value = value || 0;
+      time = time || Date.now()
+      value = value || 0
 
-      var index = timeToIndex(time);
-      var t = data.length - index - 1;
+      var index = timeToIndex(time)
+      var t = data.length - index - 1
       if (t < data.length && t >= 0) {
-        data[t].value += value;
+        data[t].value += value
       }
-
-    };
+    }
 
     function render () {
-      var xoff = ticks % line_width;
-      xoff -= line_width;
+      var xoff = ticks % line_width
+      xoff -= line_width
 
-      var d = data.slice(0, data.length - offset_len + buf_left).reverse();
+      var d = data.slice(0, data.length - offset_len + buf_left).reverse()
 
-      ctx.strokeStyle = "green";
+      ctx.strokeStyle = "green"
       // draw all data points
-      ctx.beginPath();
-      ctx.moveTo(origin.x - xoff, origin.y);
+      ctx.beginPath()
+      ctx.moveTo(origin.x - xoff, origin.y)
 
       // calculate new ySclale (based around max value)
-      var yMax = 1;
+      var yMax = 1
       for (var i = 0; i < d.length; i++) {
-        var v = Number(d[i].value);
+        var v = Number(d[i].value)
         if (v > yMax) {
-          yMax = v;
+          yMax = v
         }
-      };
-      //console.log("ymax: %s", yMax);
-      yScale = scale(0, yMax * 1.25);
+      }
+      //console.log("ymax: %s", yMax)
+      yScale = scale(0, yMax * 1.25)
 
       for (var i = 0; i < d.length; i++) {
-        var point = d[i];
+        var point = d[i]
         var to = {
           x: origin.x - i * line_width,
           y: origin.y - point.value,
-        };
+        }
 
-        to.y = origin.y - yScale(point.value) * h;
+        to.y = origin.y - yScale(point.value) * h
 
-        ctx.lineTo(to.x - xoff, to.y);
+        ctx.lineTo(to.x - xoff, to.y)
       }
 
-      ctx.stroke();
+      ctx.stroke()
 
-    };
+    }
 
     function tick () {
-      ticks++;
-      //console.log(ticks);
-      clear();
-      drawBorder();
-
-      /*
-         if (ticks % line_width === 0) {
-         addValue(5 + Math.random() * 10);
-         }
-
-         if (ticks % (pps) === 0) {
-         addValue(30);
-         }
-
-         if (ticks % (pps * 5) === 0) {
-         addValue(1000);
-         }
-         */
+      ticks++
+      clear()
 
       if (ticks % line_width === 0) {
-        data.push({value: 0, time: Date.now()});
-        data.shift();
+        data.push({value: 0, time: Date.now()})
+        data.shift()
       }
 
-      render();
+      render()
+      drawBorder()
 
       if (__running) {
-        timeout = setTimeout(tick, MS_PER_TICK);
+        timeout = setTimeout(tick, MS_PER_TICK)
       }
-    };
+    }
 
-    tick();
+    tick()
+
+    console.log('get end len: %s', data.length)
 
     return {
       addData: function (value, time) {
-        addValue(value, time); // epochTime
+        addValue(value, time) // epochTime
       },
+      getData: function () {
+        return data.slice()
+      },
+      data: data,
       stop: function () {
-        __running = false;
+        __running = false
       }
-    };
-  }; // init
-
+    }
+  } // init
 
   function resize (params) {
-    var opts = params || opts;
-    canvas.width = 300 || opts.width;
-    canvas.height = 40 || opts.height;
+    var opts = Object.assign({}, defaults, params)
+    console.log('resizing: %sx%s', opts.width, opts.height)
 
-    if (opts.width == 'auto' || opts.size == 'auto') {
-      canvas.style.width = "100%";
-      canvas.width = canvas.offsetWidth;
+    if (params.size === 'auto') {
+      console.log('------------ IS AUTO ----------')
+      opts.width = 'auto'
+      opts.height = 'auto'
     }
 
-    if (opts.height == 'auto' || opts.size == 'auto') {
-      canvas.style.height = "100%";
-      canvas.height = canvas.offsetHeight;
-      canvas.style.marginTop = "4px";
+    canvas.width = opts.width
+    canvas.height = opts.height
+
+    console.log('cw: %s, ch: %s', canvas.width, canvas.height)
+
+    canvas.style.width = canvas.style.height = 'auto'
+
+    if (opts.width === 'auto') {
+      canvas.style.width = "100%"
+      canvas.width = canvas.offsetWidth || 300
+      console.log('offsetWidth: %s', canvas.offsetWidth)
     }
-  };
-  resize(opts);
+
+    if (opts.height === 'auto') {
+      canvas.style.height = "100%"
+      canvas.height = canvas.offsetHeight || 40
+      canvas.style.marginTop = "4px"
+      console.log('offsetHeight: %s', canvas.offsetHeight)
+    }
+  }
+  resize(opts)
+
+  var _opts = opts
+  setTimeout(function () {
+    resize(opts)
+    update()
+  }, 0)
 
   var update = function () {
-    api.stop();
-    clearTimeout(timeout);
-    var _api = init(canvas);
-    api.addData = _api.addData;
-    api.stop = _api.stop;
-    return api;
-  };
+    var _d = api.getData()
+    api.stop()
+    clearTimeout(timeout)
+    console.log('UPDATE LENGTH: %s', _d.length)
+    var _api = init(canvas, _d)
+    api.addData = _api.addData
+    api.stop = _api.stop
+    api.getData = _api.getData
+  }
 
-  var _api = init(canvas);
+  var _api = init(canvas)
   api = {
     addData: _api.addData,
+    getData: function () {
+      return _api.getData()
+    },
     stop: _api.stop,
     update: function () {
-      return update();
+      return update()
     },
     resize: function (opts) {
-      resize({width: 'auto', height: 'auto'});
-      return update();
+      resize(opts || {width: 'auto', height: 'auto'})
+      update()
     }
-  };
-  return api;
-};
+  }
 
+  return api
+}
+
+if (typeof module !== 'undefined' && module.exports) moduel.exports = init
