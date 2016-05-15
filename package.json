@@ -1,6 +1,6 @@
 {
   "name": "realtimechart",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "minimalistic realtime chart built on canvas",
   "main": "realtimechart.js",
   "scripts": {
