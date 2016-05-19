@@ -20,7 +20,8 @@
       .small {
         margin-left: auto;
         margin-right: auto;
-        max-width: 200px;
+        height: auto;
+        max-width: 250px;
       }
 
       .centered {
@@ -57,8 +58,8 @@
     var ctrl1 = init('screen1', { size: 'auto', interval: 5000, offset: 0 });
     var ctrl2 = init('screen2', { size: 'auto', interval: 5000, offset: 5000 });
 
-    var ctrl3 = init('screen3', { line_width: 4, interval: 1000, offset: 0 });
-    var ctrl4 = init('screen4', { line_width: 4, interval: 1000, offset: 1000 });
+    var ctrl3 = init('screen3', { line_width: 4, interval: 10000, offset: 0 });
+    var ctrl4 = init('screen4', { line_width: 4, interval: 10000, offset: 1000 });
 
     var ctrl5 = init('screen5',
       { size: 'auto', line_width: 2, interval: 1000 * 60, offset: 3000 }
@@ -73,39 +74,40 @@
 
     var ticks = 0;
     // insert bogus data
-    setInterval(function () {
+    tick = function () {
       ticks++;
 
       var time = Date.now() - 2500 * Math.random();
       var n = Math.random() * 10;
 
-      ctrl1.addData(n, time);
-      ctrl2.addData(n, time);
+      ctrl1.insertData(n, time);
+      ctrl2.insertData(n, time);
 
       var time = Date.now() - 1000 * Math.random();
       var n = Math.random() * 10;
 
-      ctrl3.addData(n, time);
-      ctrl4.addData(n, time);
+      ctrl3.insertData(n, time);
+      ctrl4.insertData(n, time);
 
       var time = Date.now() - 3000 * Math.random();
       var n = Math.random() * (10 + ticks / 40) + ticks / 300;
 
-      ctrl5.addData(n, time);
-      ctrl6.addData(n, time);
-      ctrl7.addData(n, time);
-      ctrl8.addData(n, time);
-      ctrl9.addData(n, time);
-    }, 25);
+      ctrl5.insertData(n, time);
+      ctrl6.insertData(n, time);
+      ctrl7.insertData(n, time);
+      ctrl8.insertData(n, time);
+      ctrl9.insertData(n, time);
+
+      setTimeout(tick, 33);
+    };
+    tick();
 
     var w = window.innerWidth * .75;
-    setInterval(function () {
-      w -= window.innerWidth * 0.1
-      if (w < (window.innerWidth * 0.25)) w = window.innerWidth * .75
-      ctrl6.resize({width: w, height: 40})
-    }, 600)
+    //setInterval(function () {
+    //  w -= window.innerWidth * 0.1
+    //  if (w < (window.innerWidth * 0.25)) w = window.innerWidth * .75
+    //  ctrl6.resize({width: w, height: 40})
+    //}, 600)
   </script>
 </body>
 </html>
-
-<h
